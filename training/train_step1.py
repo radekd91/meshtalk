@@ -14,6 +14,8 @@ from training.dataset import DataReader
 from training.forwarder import DiscreteExpressionForwarder
 from training.trainer import Trainer
 
+from gdl.datasets.MEADPseudo3DDM import MEADPseudo3DDM
+
 
 config = {
     "artifacts_dir": "artifacts_dir",
@@ -40,20 +42,35 @@ config = {
 os.system(f"mkdir -p {config['artifacts_dir']}")
 
 # load mean, stddev, and masks
-mean = th.from_numpy(np.load(config["vertex_mean"]))
-stddev = th.from_numpy(np.load(config["vertex_std"]))
-mouth_mask = np.loadtxt("assets/weighted_mouth_mask.txt").astype(np.float32).flatten()
+## TODO: this part is really unfortunate, I think we need to adjsut this based on our data, vertex_mean is probably a netural flame mesh, 
+# std taken from the shape space, Timo might know the easiest way to get them
+mean = th.from_numpy(np.load(config["vertex_mean"])) 
+stddev = th.from_numpy(np.load(config["vertex_std"]))  
+## TODO: This part is even more annoying, they have special keypoints and masks of mouth and eye regions (this would have to be adjusted to FLAME)
+mouth_mask = np.loadtxt("assets/weighted_mouth_mask.txt").astype(np.float32).flatten() #
 eye_mask = np.loadtxt("assets/weighted_eye_mask.txt", dtype=np.float32).flatten()
 eye_keypoints = np.loadtxt("assets/eye_keypoints.txt", dtype=np.float32).flatten()
 
-# define train and validation dataset
-train_dataset = DataReader()
-val_dataset = DataReader()
+# ## MESHTALK template:
+# # define train and validation dataset
+# train_dataset = DataReader()
+# val_dataset = DataReader()
+
+# ## our adaptation: 
+dm = MEADPseudo3DDM(
+    # TODO: call with the same parameters as our final models 
+)
+
+dm.prepare_data()
+dm.setup()
+
+train_dataset = dm.training_set
+val_dataset = dm.validation_set
 
 # create models
 geom_unet = VertexUnet(classes=config["expression_space"]["classes"],
                        heads=config["expression_space"]["heads"],
-                       n_vertices=train_dataset.n_vertices,
+                       n_vertices=train_dataset.n_vertices, # TODO: hack in the FLAME vertices
                        mean=mean,
                        stddev=stddev,
                        )
@@ -62,7 +79,7 @@ encoder = MultimodalEncoder(classes=config["expression_space"]["classes"],
                             heads=config["expression_space"]["heads"],
                             expression_dim=128,
                             audio_dim=128,
-                            n_vertices=train_dataset.n_vertices,
+                            n_vertices=train_dataset.n_vertices,  # TODO: hack in the FLAME vertices
                             mean=mean,
                             stddev=stddev
                             )

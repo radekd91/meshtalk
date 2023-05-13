@@ -8,6 +8,12 @@ LICENSE file in the root directory of this source tree.
 import torch as th
 
 
+from gdl.datasets.MEADPseudo3DDM import MEADPseudo3DDM, MEADPseudo3dDataset
+
+
+
+
+#TODO: this is where we need to import our dataset I think
 class DataReader:
     def __init__(
             self,

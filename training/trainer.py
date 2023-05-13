@@ -56,7 +56,8 @@ class Trainer:
                     for param_group in opt.param_groups:
                         param_group['lr'] = param_group['lr'] * 0.1
 
-            if iters % 1000 == 0:
+            if iters % 1000 == 0: ## TODO: we may need to adjust the frequencies a bit here
+
                 # process random batch from validation set
                 loss_val_dict = self.validation_step()
                 # log some information about this iteration
@@ -82,6 +83,10 @@ class Trainer:
 
         loss_dict = self.forwarder.forward(data)
         loss = [loss_dict[k] * self.config["train"]["loss_weights"].get(k, 1.0) for k in self.config["train"]["loss_terms"]]
+
+        #TODO: it would be great to hook this up to weights and biases and log the losses there (both weighted and unwieghted terms) as well as the final value
+        # so that we can look at the convergence of the model
+
         loss = th.sum(th.stack(loss))
         loss.backward()
 
@@ -104,5 +109,7 @@ class Trainer:
         data = next(val_dataloader)
         loss_dict = self.forwarder.forward(data)
         loss_dict = {k + "_val": v for k, v in loss_dict.items()}
+
+        # TODO: same, we should do weights and biases
 
         return loss_dict

@@ -14,6 +14,7 @@ from training.dataset import DataReader
 from training.forwarder import CategoricalAutoregressiveForwarder
 from training.trainer import Trainer
 
+from gdl.datasets.MEADPseudo3DDM import MEADPseudo3DDM
 
 config = {
     "artifacts_dir": "artifacts_dir",
@@ -45,6 +46,17 @@ stddev = th.from_numpy(np.load(config["vertex_std"]))
 # define train and validation dataset
 train_dataset = DataReader(segment_length=64)
 val_dataset = DataReader(segment_length=64)
+
+# ## our adaptation: 
+dm = MEADPseudo3DDM(
+    # TODO: call with the same parameters as our final models 
+)
+
+dm.prepare_data()
+dm.setup()
+
+train_dataset = dm.training_set
+val_dataset = dm.validation_set
 
 encoder = MultimodalEncoder(classes=config["expression_space"]["classes"],
                             heads=config["expression_space"]["heads"],
