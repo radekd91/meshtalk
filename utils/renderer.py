@@ -5,10 +5,11 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 """
 
+import os
 import ffmpeg
 import numpy as np
 import torch as th
-from pytorch3d.io import load_obj
+from pytorch3d.io import load_obj, save_obj
 from pytorch3d.structures import Meshes
 from pytorch3d.renderer import (
     look_at_view_transform,
@@ -113,3 +114,20 @@ class Renderer:
         )
 
         proc.communicate(input=images.tobytes())
+
+    def to_obj(self, verts: th.Tensor, obj_output, name=None):
+        
+        obj = self.create_obj(verts)                                            # verts torch.Size([72, 6172, 3]) 
+        for i, (vert, face) in enumerate(zip(obj.verts_list(), obj.faces_list())):
+            if name: obj_file = obj_output / f'{name}_{i:05d}.obj'
+            else: obj_file = os.path.join(obj_output, f'{i:05d}.obj')
+            save_obj(f=obj_file, verts=vert, faces=face)
+        
+    def create_obj(self, verts: th.Tensor):
+        verts = verts * 0.01
+        textures = Textures(verts_rgb=self.verts_rgb.expand(verts.shape[0], -1, -1))
+        return Meshes(
+            verts=verts.to(self.device),
+            faces=self.faces.expand(verts.shape[0], -1, -1),
+            textures=textures
+        )

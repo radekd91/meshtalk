@@ -1,0 +1,6 @@
+
+*/__pycache__/*
+pretrained_models/vertex_unet.pkl
+pretrained_models/context_model.pkl
+pretrained_models/encoder.pkl
+test_outs/

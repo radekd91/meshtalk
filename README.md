@@ -17,6 +17,11 @@ This repository contains code to run [MeshTalk](https://openaccess.thecvf.com/co
 
 ## Running MeshTalk
 
+# KIRAN Setup:
+use: work38_clone, works out of the box.
+place pretrained_models.
+direct to relevant audio and expected out mp4.
+
 ### Dependencies
 
 ```
